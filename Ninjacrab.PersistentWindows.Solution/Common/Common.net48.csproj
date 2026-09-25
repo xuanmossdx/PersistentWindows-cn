@@ -22,6 +22,7 @@
     <Compile Include="Diagnostics\Log.cs" />
     <Compile Include="HotKeyWindow.cs" />
     <Compile Include="HotKeyWindow.Designer.cs" />
+    <Compile Include="Lang.cs" />
     <Compile Include="LaunchProcess.cs" />
     <Compile Include="LaunchProcess.Designer.cs" />
     <Compile Include="LayoutProfile.cs" />

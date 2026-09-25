@@ -1,4 +1,5 @@
 ﻿using System;
+using PersistentWindows.Common;
 using System.Windows.Forms;
 
 namespace PersistentWindows.SystrayShell
@@ -26,13 +27,20 @@ namespace PersistentWindows.SystrayShell
 
         private void SplashForm_Load(object sender, EventArgs e)
         {
-            this.label1.Text =
+            this.label1.Text = Lang.Chinese ?
+    $@"
+    Persistent Windows
+    版本 {Application.ProductVersion}
+
+    作者:        Min Yong Kim
+    贡献者:  Kang Yu, Sean Aitken
+    " :
     $@"
     Persistent Windows
     Version {Application.ProductVersion}
-                
-    作者:        Min Yong Kim
-    贡献者:  Kang Yu, Sean Aitken
+
+    Author:        Min Yong Kim
+    Contributors:  Kang Yu, Sean Aitken
     ";
 
         }
