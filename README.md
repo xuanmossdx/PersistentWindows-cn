@@ -26,6 +26,14 @@
 
 串流虚拟屏断开后，个别程序的窗口（如微信）会滞留在已消失的虚拟屏坐标上，连 PersistentWindows 的自动恢复也可能漏掉。`拉回离屏窗口.ps1`（配套 bat 启动器）会枚举所有完全跑出可见屏幕范围的窗口并拉回，弹窗报告结果。此脚本为本仓库新增，与上游无关。
 
+### 4. 修复"恢复布局时重新启动程序"的中文路径乱码问题
+
+上游 issue：[#428 "Please support Chinese"](https://github.com/kangyu-california/PersistentWindows/issues/428)——恢复布局时重启被捕捉的程序，PW 会把启动命令写入 `pw_exec*.bat` 再执行。`File.WriteAllText` 默认以 UTF-8 无 BOM 编码写文件，而 cmd.exe 按系统 ANSI 代码页（中文系统为 GBK）读取 bat，导致中文路径变成乱码、程序无法启动。
+
+上游给出的方案是让用户在系统区域设置中勾选"Beta: 使用 Unicode UTF-8"，属于全局开关，可能影响其他老旧非 Unicode 程序。
+
+本版本改为 **`File.WriteAllText(..., Encoding.Default)`**（共 4 处），按系统 ANSI 代码页写入，cmd 按什么读就按什么写——任何语言的 Windows、无论是否开启 UTF-8 Beta 均正常工作，用户无需更改任何系统设置。
+
 ## 编译方法
 
 环境要求：Windows 10/11 + [.NET SDK 8](https://dotnet.microsoft.com/download/dotnet/8.0)。

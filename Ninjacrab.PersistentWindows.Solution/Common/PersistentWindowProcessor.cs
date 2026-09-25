@@ -5250,11 +5250,12 @@ namespace PersistentWindows.Common
                                             dir = $"\"{dir}\"";
                                         }
 
-                                        File.WriteAllText(batFile, "start \"\" /B " + dir);
+                                        // write in system ANSI codepage so cmd.exe reads non-ASCII paths correctly
+                                        File.WriteAllText(batFile, "start \"\" /B " + dir, Encoding.Default);
                                     }
                                     else if (dir.Equals("This PC") || dir.Equals("Computer"))
                                     {
-                                        File.WriteAllText(batFile, "explorer /n, /select, %SystemDrive%");
+                                        File.WriteAllText(batFile, "explorer /n, /select, %SystemDrive%", Encoding.Default);
                                     }
                                     else
                                     {
@@ -5282,12 +5283,12 @@ namespace PersistentWindows.Common
                                             dir = $"\"{dir}\"";
                                         }
 
-                                        File.WriteAllText(batFile, "cd %userprofile%" + Environment.NewLine + "start \"\" " + dir);
+                                        File.WriteAllText(batFile, "cd %userprofile%" + Environment.NewLine + "start \"\" " + dir, Encoding.Default);
                                     }
                                 }
                                 else
                                 {
-                                    File.WriteAllText(batFile, "start \"\" /B " + processPath);
+                                    File.WriteAllText(batFile, "start \"\" /B " + processPath, Encoding.Default);
                                 }
 
                                 Process process = Process.Start("explorer.exe", batFile);
