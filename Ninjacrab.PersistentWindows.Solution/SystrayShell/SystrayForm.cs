@@ -72,6 +72,7 @@ namespace PersistentWindows.SystrayShell
             languageMenuItem = new ToolStripMenuItem(Lang.T("Language", "语言 / Language"));
             languageMenuItem.Click += ToggleLanguage;
             contextMenuStripSysTray.Items.Insert(contextMenuStripSysTray.Items.IndexOf(aboutToolStripMenuItem), languageMenuItem);
+            ApplyLanguage();
 
             clickDelayTimer = new System.Timers.Timer(1000);
             clickDelayTimer.Elapsed += ClickTimerCallBack;
@@ -517,9 +518,34 @@ namespace PersistentWindows.SystrayShell
         private void ToggleLanguage(Object sender, EventArgs e)
         {
             Lang.Set(!Lang.Chinese);
-            languageMenuItem.Text = Lang.T("Language", "语言 / Language");
+            ApplyLanguage();
             notifyIconMain.ShowBalloonTip(5000, Lang.T("Language switched", "语言已切换"),
-                Lang.T("Restart PersistentWindows to apply the new language.", "重启 PersistentWindows 后生效。"), ToolTipIcon.Info);
+                Lang.T("The interface language has been applied.", "界面语言已即时生效。"), ToolTipIcon.Info);
+        }
+
+        // re-apply every user-visible text in place, so switching language takes effect immediately
+        private void ApplyLanguage()
+        {
+            languageMenuItem.Text = Lang.T("Language", "语言 / Language");
+            captureToolStripMenuItem.Text = Lang.T("Capture windows to disk", "保存窗口布局(&C)");
+            restoreToolStripMenuItem.Text = Lang.T("Restore windows from disk", "恢复窗口布局(&R)");
+            restoreAllParkedMenuItem.Text = Lang.T("Restore all minimized windows", "展开所有最小化的窗口");
+            captureSnapshotMenuItem.Text = Lang.T("Capture snapshot", "捕捉布局快照(&S)");
+            restoreSnapshotMenuItem.Text = Lang.T("Restore snapshot", "恢复布局快照(&N)");
+            pauseResumeToolStripMenuItem.Text = pauseAutoRestore ?
+                Lang.T("Resume auto restore", "继续自动恢复") : Lang.T("Pause auto restore", "暂停自动恢复(&P)");
+            toggleIconMenuItem.Text = toggleIcon ?
+                Lang.T("Disable customized icon", "停用自定义图标") : Lang.T("Try customized icon", "尝试自定义图标");
+            invokeWebCommander.Text = webpageCommanderOn ?
+                Lang.T("Disable webpage commander", "停用网页控制窗口") : Lang.T("Enable webpage commander", "启用网页控制窗口");
+            if (upgradeAvailableVersion != null)
+                upgradeNoticeMenuItem.Text = Lang.T($"Upgrade to {upgradeAvailableVersion}", $"升级到 {upgradeAvailableVersion}");
+            else
+                upgradeNoticeMenuItem.Text = upgradeNoticeOn ?
+                    Lang.T("Disable upgrade notice", "关闭升级提醒") : Lang.T("Enable upgrade notice", "启用升级提醒");
+            aboutToolStripMenuItem.Text = Lang.T("&Help", "帮助(&H)");
+            exitToolStripMenuItem.Text = Lang.T("&Exit", "退出(&X)");
+            notifyIconMain.BalloonTipText = Lang.T("Please wait while restoring windows", "正在恢复窗口布局，请稍候");
         }
 
         private void AboutToolStripMenuItemClickHandler(object sender, EventArgs e)
