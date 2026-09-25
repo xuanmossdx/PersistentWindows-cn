@@ -44,6 +44,8 @@ namespace PersistentWindows.SystrayShell
         {
             InitializeComponent();
 
+            upgradeNoticeMenuItem.Visible = false; // cn fork: no upgrade notice, build is pinned
+
             if (File.Exists(Program.DisableUpgradeNotice))
                 upgradeNoticeMenuItem.Text = "启用升级提醒";
             else if (!enable_upgrade_notice)
@@ -238,6 +240,9 @@ namespace PersistentWindows.SystrayShell
 
         private void CheckUpgradeSafe()
         {
+            // cn fork: upgrade check disabled on purpose — this build is pinned to
+            // upstream 5.76 + our own changes; upgrading upstream would wipe the localization
+            return;
             try
             {
                 CheckUpgrade();

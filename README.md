@@ -34,6 +34,10 @@
 
 本版本将所有 bat 生成点的 `File.WriteAllText` 统一改为 **`Encoding.Default`** 按系统 ANSI 代码页写入（共 6 处：`pw_exec*.bat` 4 处、`pw_restart.bat`、`pw_upgrade.bat`），cmd 按什么读就按什么写——任何语言的 Windows、无论是否开启 UTF-8 Beta 均正常工作，用户无需更改任何系统设置。已实测验证：本系统（中文 Windows）上 PowerShell 捕捉管线输出编码与 .NET 默认解码一致，捕捉阶段中文路径无乱码，问题根源确实仅在 bat 写入环节。
 
+### 5. 禁用自动升级检查（版本钉死）
+
+中文版基于上游 5.76 修改，如果跟随上游自动升级会覆盖全部汉化和便携化改动。因此本版本**短路了升级检查逻辑**（不再访问 GitHub 查询新版本、不再自动下载升级包），并隐藏了托盘菜单中的升级提醒入口。本版本将稳定在 5.76-cn，直至主动更新。
+
 ## 编译方法
 
 环境要求：Windows 10/11 + [.NET SDK 8](https://dotnet.microsoft.com/download/dotnet/8.0)。
