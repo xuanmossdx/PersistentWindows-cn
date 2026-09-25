@@ -32,7 +32,7 @@
 
 上游给出的方案是让用户在系统区域设置中勾选"Beta: 使用 Unicode UTF-8"，属于全局开关，可能影响其他老旧非 Unicode 程序。
 
-本版本改为 **`File.WriteAllText(..., Encoding.Default)`**（共 4 处），按系统 ANSI 代码页写入，cmd 按什么读就按什么写——任何语言的 Windows、无论是否开启 UTF-8 Beta 均正常工作，用户无需更改任何系统设置。
+本版本将所有 bat 生成点的 `File.WriteAllText` 统一改为 **`Encoding.Default`** 按系统 ANSI 代码页写入（共 6 处：`pw_exec*.bat` 4 处、`pw_restart.bat`、`pw_upgrade.bat`），cmd 按什么读就按什么写——任何语言的 Windows、无论是否开启 UTF-8 Beta 均正常工作，用户无需更改任何系统设置。已实测验证：本系统（中文 Windows）上 PowerShell 捕捉管线输出编码与 .NET 默认解码一致，捕捉阶段中文路径无乱码，问题根源确实仅在 bat 写入环节。
 
 ## 编译方法
 
