@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>PersistentWindows.Common</RootNamespace>
+    <AssemblyName>PersistentWindows.Common</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="DbKeySelect.cs" />
+    <Compile Include="DbKeySelect.Designer.cs" />
+    <Compile Include="Diagnostics\Log.cs" />
+    <Compile Include="HotKeyWindow.cs" />
+    <Compile Include="HotKeyWindow.Designer.cs" />
+    <Compile Include="LaunchProcess.cs" />
+    <Compile Include="LaunchProcess.Designer.cs" />
+    <Compile Include="LayoutProfile.cs" />
+    <Compile Include="LayoutProfile.Designer.cs" />
+    <Compile Include="MinimizeToNotify.cs" />
+    <Compile Include="Models\ApplicationDisplayMetrics.cs" />
+    <Compile Include="Models\DesktopDisplayMetrics.cs" />
+    <Compile Include="NameDbKey.cs" />
+    <Compile Include="NameDbKey.Designer.cs" />
+    <Compile Include="PersistentWindowProcessor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VirtualDesktop.cs" />
+    <Compile Include="WinApiBridge\CallWindowProcedureParam.cs" />
+    <Compile Include="WinApiBridge\Display.cs" />
+    <Compile Include="WinApiBridge\MonitorInfo.cs" />
+    <Compile Include="WinApiBridge\SetWindowPosFlags.cs" />
+    <Compile Include="WinApiBridge\ShowWindowCommands.cs" />
+    <Compile Include="WinApiBridge\User32.cs" />
+    <Compile Include="WinApiBridge\WindowPlacement.cs" />
+    <Compile Include="WinApiBridge\WindowsMessage.cs" />
+    <Compile Include="WinApiBridge\WindowsPosition.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="DbKeySelect.resx" />
+    <EmbeddedResource Include="LaunchProcess.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="LiteDB">
+      <HintPath>D:\PersistentWindows\LiteDB.dll</HintPath>
+    </Reference>
+    <PackageReference Include="System.Resources.Extensions" Version="4.6.0" />
+  </ItemGroup>
+
+</Project>
