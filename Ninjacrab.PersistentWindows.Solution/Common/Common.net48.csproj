@@ -52,6 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="LiteDB">
       <HintPath>D:\PersistentWindows\LiteDB.dll</HintPath>
     </Reference>

@@ -1,36 +1,44 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Web.Script.Serialization;
 
 namespace PersistentWindows.Common
 {
     /// <summary>
-    /// Central translation table for the cn fork.
+    /// File-based translation table for the cn fork.
     ///
-    /// Every user-visible string has a key; each key maps to a named-language row,
-    /// one language per line:
+    /// All translations live in ONE external, user-editable file:
+    ///     user_data\translations.json
     ///
-    ///     { "menu.captureDisk", Row(
-    ///         "en", "Capture windows to disk",
-    ///         "zh", "保存窗口布局(&C)") },
+    /// Every entry is a key mapped to a named-language row, one language per line:
+    ///
+    ///     "menu.captureDisk": {
+    ///       "en": "Capture windows to disk",
+    ///       "zh": "保存窗口布局(&C)"
+    ///     },
     ///
     /// Call sites only reference the key:  Lang.T("menu.captureDisk")
-    /// (rows may contain {0}-style placeholders:  Lang.T("balloon.snapshotCaptured", id))
+    /// (entries may contain {0}-style placeholders:  Lang.T("balloon.snapshotCaptured", id))
     ///
-    /// Adding a language = add a new name/value line to the rows (e.g. "jp"),
-    /// and register it in Languages below. Missing entries fall back to "en".
+    /// Adding a language = add a new name/value line to the entries (e.g. "jp"),
+    /// and register it in Languages below. Editing a translation = edit the file and
+    /// restart; no recompiling. Missing entries / broken file fall back to the
+    /// built-in English defaults, and a missing file is regenerated on start.
     /// </summary>
     public static class Lang
     {
         /// <summary>languages the tray toggle cycles through, in order</summary>
         public static readonly string[] Languages = { "en", "zh" };
 
-        /// <summary>active language name (a key of the rows, e.g. "en" or "zh")</summary>
+        /// <summary>active language name (a key of the entries, e.g. "en" or "zh")</summary>
         public static string Current = "en";
 
-        public static string LangFile = null;
+        public static string LangFile = null;      // lang.txt: current language
+        public static string StringsFile = null;   // translations.json: all translations
 
-        /// <summary>small helper: build a named-language row</summary>
+        /// <summary>small helper: build a named-language entry</summary>
         private static Dictionary<string, string> Row(params string[] nameValuePairs)
         {
             var row = new Dictionary<string, string>();
@@ -39,8 +47,8 @@ namespace PersistentWindows.Common
             return row;
         }
 
-        // the translation table
-        public static readonly Dictionary<string, Dictionary<string, string>> Strings = new Dictionary<string, Dictionary<string, string>>
+        /// <summary>factory defaults: used to (re)create translations.json and as fallback</summary>
+        private static readonly Dictionary<string, Dictionary<string, string>> Defaults = new Dictionary<string, Dictionary<string, string>>
         {
             // tray menu
             { "menu.captureDisk", Row(
@@ -199,7 +207,11 @@ namespace PersistentWindows.Common
                 "zh", "请输入布局存档名称") },
         };
 
-        /// <summary>look up a row by key; missing entries fall back to "en";
+        /// <summary>active table = factory defaults overlaid with translations.json
+        /// (the file can override any text and add new languages/keys)</summary>
+        public static Dictionary<string, Dictionary<string, string>> Strings = new Dictionary<string, Dictionary<string, string>>(Defaults);
+
+        /// <summary>look up an entry by key; missing languages fall back to "en";
         /// args fill {0}-style placeholders when given</summary>
         public static string T(string key, params object[] args)
         {
@@ -215,12 +227,18 @@ namespace PersistentWindows.Common
             return text;
         }
 
-        /// <summary>load the persisted language choice (called once at startup)</summary>
+        /// <summary>load translations + persisted language choice (called once at startup)</summary>
         public static void Load(string appDataFolder)
         {
             LangFile = Path.Combine(appDataFolder, "lang.txt");
+            StringsFile = Path.Combine(appDataFolder, "translations.json");
             try
             {
+                if (File.Exists(StringsFile))
+                    ReadStringsFile();
+                else
+                    WriteStringsFile();   // first run: ship the default file
+
                 if (File.Exists(LangFile))
                 {
                     string v = File.ReadAllText(LangFile).Trim();
@@ -229,8 +247,52 @@ namespace PersistentWindows.Common
             }
             catch (Exception)
             {
-                // fall back to English on any read problem
+                // any problem with the file just leaves the built-in defaults active
             }
+        }
+
+        private static void ReadStringsFile()
+        {
+            string json = File.ReadAllText(StringsFile);
+            var parsed = new JavaScriptSerializer().Deserialize<Dictionary<string, Dictionary<string, string>>>(json);
+            if (parsed == null || parsed.Count == 0)
+            {
+                WriteStringsFile();
+                return;
+            }
+            // overlay: parsed entries extend/replace the built-in defaults, so even a
+            // partial file never leaves the UI without a string
+            Strings = new Dictionary<string, Dictionary<string, string>>(Defaults);
+            foreach (var kv in parsed)
+                Strings[kv.Key] = kv.Value;
+        }
+
+        private static void WriteStringsFile()
+        {
+            var sb = new StringBuilder();
+            sb.Append("{\n");
+            int i = 0;
+            foreach (var kv in Defaults)
+            {
+                sb.Append("  ").Append(Quote(kv.Key)).Append(": {");
+                int j = 0;
+                foreach (var lang in kv.Value)
+                {
+                    sb.Append(j++ == 0 ? "\n" : ",\n")
+                      .Append("    ").Append(Quote(lang.Key)).Append(": ").Append(Quote(lang.Value));
+                }
+                sb.Append("\n  }");
+                if (++i < Defaults.Count) sb.Append(",");
+                sb.Append("\n");
+            }
+            sb.Append("}\n");
+            File.WriteAllText(StringsFile, sb.ToString(), new UTF8Encoding(false));
+        }
+
+        private static string Quote(string s)
+        {
+            return "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"")
+                           .Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t") + "\"";
         }
 
         /// <summary>switch language and persist the choice</summary>
