@@ -35,11 +35,13 @@ PersistentWindows 的中文增强版。基于 [kangyu-california/PersistentWindo
 全部用户可见文本（托盘菜单、气泡通知、启动画面、各类弹窗，约 45 组词条）集中在 `Common/Lang.cs` 的**中央词条表**里，代码中只引用词条 ID：
 
 ```csharp
-// 每行一个词条：ID -> [英文, 简体中文]，列可扩展
-{ "menu.captureDisk", new[] { "Capture windows to disk", "保存窗口布局(&C)" } },
+// 每行一个词条：ID -> { 语言名: 文本 }，语言列可扩展
+{ "menu.captureDisk", Row(
+    "en", "Capture windows to disk",
+    "zh", "保存窗口布局(&C)") },
 ```
 
-- 调用点只写 `Lang.T("menu.captureDisk")`，**新增语言 = 每行追加一个元素并扩展语言索引，代码零改动**；占位符词条（如 `"Upgrade to {0}"`）支持参数格式化
+- 调用点只写 `Lang.T("menu.captureDisk")`，**新增语言 = 在每行里追加一对语言名和文本**（如 `"jp", "..."`）并注册到 `Lang.Languages`，调用点代码零改动；缺失的语言自动回退英文；占位符词条（如 `"Upgrade to {0}"`）支持参数格式化
 - **默认英文**，与上游行为完全一致；右键托盘图标 → **语言 / Language** 点击**立即切换**（无需重启），选择持久化保存在 `user_data/lang.txt`
 - 顺带重构了 `SystrayForm.cs` 中 4 处"用菜单文字内容判断状态"的 `Contains(...)` 逻辑，改为真正的状态变量（这是任何本地化的前置条件，也是一处代码质量改进）
 

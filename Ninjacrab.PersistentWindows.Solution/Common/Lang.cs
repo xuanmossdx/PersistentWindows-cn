@@ -7,97 +7,112 @@ namespace PersistentWindows.Common
     /// <summary>
     /// Central translation table for the cn fork.
     ///
-    /// Every user-visible string has a key; each key maps to one row of per-language
-    /// text. Column 0 is English (the default/fallback), column 1 is Simplified
-    /// Chinese. Call sites only reference the key:
+    /// Every user-visible string has a key; each key maps to a named-language row:
     ///
-    ///     Lang.T("menu.captureDisk")
-    ///     Lang.T("balloon.snapshotCaptured", id)   // rows may contain {0}-style placeholders
+    ///     { "menu.captureDisk", Row(
+    ///         "en", "Capture windows to disk",
+    ///         "zh", "保存窗口布局(&C)") },
     ///
-    /// Adding a new language = append one element to every row and extend
-    /// LangIndex below. Adding a new feature string = add one row. No other
-    /// code changes required.
+    /// Call sites only reference the key:  Lang.T("menu.captureDisk")
+    /// (rows may contain {0}-style placeholders:  Lang.T("balloon.snapshotCaptured", id))
+    ///
+    /// Adding a language = add a new name/value pair to the rows (e.g. "jp"),
+    /// and register it in Languages below. Missing entries fall back to "en".
     /// </summary>
     public static class Lang
     {
-        /// <summary>active language column index; 0 = English</summary>
-        public static int LangIndex = 0;
+        /// <summary>languages the tray toggle cycles through, in order</summary>
+        public static readonly string[] Languages = { "en", "zh" };
+
+        /// <summary>active language name (a key of the rows, e.g. "en" or "cn")</summary>
+        public static string Current = "en";
 
         public static string LangFile = null;
 
-        // language columns: 0 = English (default), 1 = 简体中文
-        public static readonly Dictionary<string, string[]> Strings = new Dictionary<string, string[]>
+        /// <summary>small helper: build a named-language row</summary>
+        private static Dictionary<string, string> Row(params string[] nameValuePairs)
+        {
+            var row = new Dictionary<string, string>();
+            for (int i = 0; i + 1 < nameValuePairs.Length; i += 2)
+                row[nameValuePairs[i]] = nameValuePairs[i + 1];
+            return row;
+        }
+
+        // the translation table
+        public static readonly Dictionary<string, Dictionary<string, string>> Strings = new Dictionary<string, Dictionary<string, string>>
         {
             // tray menu
-            { "menu.captureDisk",        new[] { "Capture windows to disk", "保存窗口布局(&C)" } },
-            { "menu.restoreDisk",        new[] { "Restore windows from disk", "恢复窗口布局(&R)" } },
-            { "menu.restoreMinimized",   new[] { "Restore all minimized windows", "展开所有最小化的窗口" } },
-            { "menu.captureSnapshot",    new[] { "Capture snapshot", "捕捉布局快照(&S)" } },
-            { "menu.restoreSnapshot",    new[] { "Restore snapshot", "恢复布局快照(&N)" } },
-            { "menu.pauseAutoRestore",   new[] { "Pause auto restore", "暂停自动恢复(&P)" } },
-            { "menu.resumeAutoRestore",  new[] { "Resume auto restore", "继续自动恢复" } },
-            { "menu.tryCustomIcon",      new[] { "Try customized icon", "尝试自定义图标" } },
-            { "menu.disableCustomIcon",  new[] { "Disable customized icon", "停用自定义图标" } },
-            { "menu.enableWebCommander", new[] { "Enable webpage commander", "启用网页控制窗口" } },
-            { "menu.disableWebCommander",new[] { "Disable webpage commander", "停用网页控制窗口" } },
-            { "menu.enableUpgradeNotice",new[] { "Enable upgrade notice", "启用升级提醒" } },
-            { "menu.disableUpgradeNotice",new[] { "Disable upgrade notice", "关闭升级提醒" } },
-            { "menu.upgradeTo",          new[] { "Upgrade to {0}", "升级到 {0}" } },
-            { "menu.language",           new[] { "Language", "语言 / Language" } },
-            { "menu.help",               new[] { "&Help", "帮助(&H)" } },
-            { "menu.exit",               new[] { "&Exit", "退出(&X)" } },
+            { "menu.captureDisk",         Row("en", "Capture windows to disk",         "zh", "保存窗口布局(&C)") },
+            { "menu.restoreDisk",         Row("en", "Restore windows from disk",       "zh", "恢复窗口布局(&R)") },
+            { "menu.restoreMinimized",    Row("en", "Restore all minimized windows",   "zh", "展开所有最小化的窗口") },
+            { "menu.captureSnapshot",     Row("en", "Capture snapshot",                "zh", "捕捉布局快照(&S)") },
+            { "menu.restoreSnapshot",     Row("en", "Restore snapshot",                "zh", "恢复布局快照(&N)") },
+            { "menu.pauseAutoRestore",    Row("en", "Pause auto restore",              "zh", "暂停自动恢复(&P)") },
+            { "menu.resumeAutoRestore",   Row("en", "Resume auto restore",             "zh", "继续自动恢复") },
+            { "menu.tryCustomIcon",       Row("en", "Try customized icon",             "zh", "尝试自定义图标") },
+            { "menu.disableCustomIcon",   Row("en", "Disable customized icon",         "zh", "停用自定义图标") },
+            { "menu.enableWebCommander",  Row("en", "Enable webpage commander",        "zh", "启用网页控制窗口") },
+            { "menu.disableWebCommander", Row("en", "Disable webpage commander",       "zh", "停用网页控制窗口") },
+            { "menu.enableUpgradeNotice", Row("en", "Enable upgrade notice",           "zh", "启用升级提醒") },
+            { "menu.disableUpgradeNotice",Row("en", "Disable upgrade notice",          "zh", "关闭升级提醒") },
+            { "menu.upgradeTo",           Row("en", "Upgrade to {0}",                  "zh", "升级到 {0}") },
+            { "menu.language",            Row("en", "Language",                        "zh", "语言 / Language") },
+            { "menu.help",                Row("en", "&Help",                           "zh", "帮助(&H)") },
+            { "menu.exit",                Row("en", "&Exit",                           "zh", "退出(&X)") },
 
             // balloon notifications
-            { "balloon.restoring",          new[] { "Please wait while restoring windows", "正在恢复窗口布局，请稍候" } },
-            { "balloon.languageSwitched",   new[] { "Language switched", "语言已切换" } },
-            { "balloon.languageApplied",    new[] { "The interface language has been applied.", "界面语言已即时生效。" } },
-            { "balloon.upgradeAvailable",   new[] { "{0} {1} upgrade is available", "{0} {1} 有新版本可用" } },
-            { "balloon.upgradeNoticeHint",  new[] { "The upgrade notice can be disabled in menu", "可在菜单中关闭升级提醒" } },
-            { "balloon.snapshotCaptured",   new[] { "snapshot '{0}' is captured", "快照 '{0}' 已保存" } },
-            { "balloon.snapshotRestoreHint",new[] { "click icon then immediately press key '{0}' to restore the snapshot", "点击图标后立即按数字键 '{0}' 即可恢复该快照" } },
-            { "balloon.webCommanderInvoked",new[] { "webpage commander is invoked via hotkey", "已通过热键呼出网页控制窗口" } },
-            { "balloon.webCommanderRevoke", new[] { "Press the hotkey (Alt + W) again to revoke", "再按一次热键 (Alt + W) 即可收回" } },
+            { "balloon.restoring",            Row("en", "Please wait while restoring windows", "zh", "正在恢复窗口布局，请稍候") },
+            { "balloon.languageSwitched",     Row("en", "Language switched", "zh", "语言已切换") },
+            { "balloon.languageApplied",      Row("en", "The interface language has been applied.", "zh", "界面语言已即时生效。") },
+            { "balloon.upgradeAvailable",     Row("en", "{0} {1} upgrade is available", "zh", "{0} {1} 有新版本可用") },
+            { "balloon.upgradeNoticeHint",    Row("en", "The upgrade notice can be disabled in menu", "zh", "可在菜单中关闭升级提醒") },
+            { "balloon.snapshotCaptured",     Row("en", "snapshot '{0}' is captured", "zh", "快照 '{0}' 已保存") },
+            { "balloon.snapshotRestoreHint",  Row("en", "click icon then immediately press key '{0}' to restore the snapshot", "zh", "点击图标后立即按数字键 '{0}' 即可恢复该快照") },
+            { "balloon.webCommanderInvoked",  Row("en", "webpage commander is invoked via hotkey", "zh", "已通过热键呼出网页控制窗口") },
+            { "balloon.webCommanderRevoke",   Row("en", "Press the hotkey (Alt + W) again to revoke", "zh", "再按一次热键 (Alt + W) 即可收回") },
 
             // message boxes
-            { "msg.alreadyRunning",       new[] { "Another instance is already running.", "程序已经在运行中。" } },
-            { "msg.proceedRestore",       new[] { "Proceed to restore windows", "即将恢复窗口布局" } },
-            { "msg.switchVirtualDesktop", new[] { "Switch to another virtual desktop to restore windows", "请切换到其他虚拟桌面后再恢复窗口" } },
-            { "msg.webCommanderZKey",     new[] { "You may also press Z key to toggle the size of webpage commander window", "也可以按 Z 键来调整网页控制窗口的大小" } },
+            { "msg.alreadyRunning",       Row("en", "Another instance is already running.", "zh", "程序已经在运行中。") },
+            { "msg.proceedRestore",       Row("en", "Proceed to restore windows", "zh", "即将恢复窗口布局") },
+            { "msg.switchVirtualDesktop", Row("en", "Switch to another virtual desktop to restore windows", "zh", "请切换到其他虚拟桌面后再恢复窗口") },
+            { "msg.webCommanderZKey",     Row("en", "You may also press Z key to toggle the size of webpage commander window", "zh", "也可以按 Z 键来调整网页控制窗口的大小") },
 
             // splash screen
-            { "splash.infoLabel",    new[] { "info", "关于" } },
-            { "splash.info",         new[] { "\n    Persistent Windows\n    Version {0}\n                \n    Author:        Min Yong Kim\n    Contributors:  Kang Yu, Sean Aitken\n    ",
-                                              "\n    Persistent Windows\n    版本 {0}\n                \n    作者:        Min Yong Kim\n    贡献者:  Kang Yu, Sean Aitken\n    " } },
-            { "splash.contributors", new[] { "Recognize All Contributors", "致谢所有贡献者" } },
+            { "splash.infoLabel",    Row("en", "info", "zh", "关于") },
+            { "splash.info",         Row("en", "\n    Persistent Windows\n    Version {0}\n                \n    Author:        Min Yong Kim\n    Contributors:  Kang Yu, Sean Aitken\n    ",
+                                          "zh", "\n    Persistent Windows\n    版本 {0}\n                \n    作者:        Min Yong Kim\n    贡献者:  Kang Yu, Sean Aitken\n    ") },
+            { "splash.contributors", Row("en", "Recognize All Contributors", "zh", "致谢所有贡献者") },
 
             // webpage commander window
-            { "webcmd.prevTab",   new[] { "Prev Tab", "上一个标签" } },
-            { "webcmd.nextTab",   new[] { "Next Tab", "下一个标签" } },
-            { "webcmd.closeTab",  new[] { "Close Tab", "关闭标签" } },
-            { "webcmd.newTab",    new[] { "New  Tab", "新建标签" } },
-            { "webcmd.home",      new[] { "Home", "主页" } },
-            { "webcmd.end",       new[] { "End", "末页" } },
-            { "webcmd.prevUrl",   new[] { "Prev Url", "上一个网址" } },
-            { "webcmd.nextUrl",   new[] { "Next Url", "下一个网址" } },
+            { "webcmd.prevTab",   Row("en", "Prev Tab",  "zh", "上一个标签") },
+            { "webcmd.nextTab",   Row("en", "Next Tab",  "zh", "下一个标签") },
+            { "webcmd.closeTab",  Row("en", "Close Tab", "zh", "关闭标签") },
+            { "webcmd.newTab",    Row("en", "New  Tab",  "zh", "新建标签") },
+            { "webcmd.home",      Row("en", "Home",      "zh", "主页") },
+            { "webcmd.end",       Row("en", "End",       "zh", "末页") },
+            { "webcmd.prevUrl",   Row("en", "Prev Url",  "zh", "上一个网址") },
+            { "webcmd.nextUrl",   Row("en", "Next Url",  "zh", "下一个网址") },
 
             // dialogs / message boxes with buttons
-            { "dlg.ok",            new[] { "OK", "确定" } },
-            { "dlg.cancel",        new[] { "Cancel", "取消" } },
-            { "dlg.selectLayout",  new[] { "Select a desktop layout to restore", "请选择要恢复的桌面布局" } },
-            { "dlg.snapshotDigitName", new[] { "Enter one digit or a letter to name the snapshot", "输入一个数字或字母作为快照名称" } },
-            { "dlg.snapshotName",  new[] { "Enter the name of snapshot", "请输入快照名称" } },
-            { "dlg.captureDiskName", new[] { "Enter the name of capture on disk", "请输入磁盘布局存档名称" } },
-            { "dlg.captureName",   new[] { "Enter the name of capture", "请输入布局存档名称" } },
+            { "dlg.ok",                Row("en", "OK", "zh", "确定") },
+            { "dlg.cancel",            Row("en", "Cancel", "zh", "取消") },
+            { "dlg.selectLayout",      Row("en", "Select a desktop layout to restore", "zh", "请选择要恢复的桌面布局") },
+            { "dlg.snapshotDigitName", Row("en", "Enter one digit or a letter to name the snapshot", "zh", "输入一个数字或字母作为快照名称") },
+            { "dlg.snapshotName",      Row("en", "Enter the name of snapshot", "zh", "请输入快照名称") },
+            { "dlg.captureDiskName",   Row("en", "Enter the name of capture on disk", "zh", "请输入磁盘布局存档名称") },
+            { "dlg.captureName",       Row("en", "Enter the name of capture", "zh", "请输入布局存档名称") },
         };
 
-        /// <summary>look up a row by key; args fill {0}-style placeholders when given</summary>
+        /// <summary>look up a row by key; missing entries fall back to "en";
+        /// args fill {0}-style placeholders when given</summary>
         public static string T(string key, params object[] args)
         {
-            string[] row;
             string text = key;
+            Dictionary<string, string> row;
             if (Strings.TryGetValue(key, out row))
             {
-                text = LangIndex > 0 && LangIndex < row.Length ? row[LangIndex] : row[0];
+                if (!row.TryGetValue(Current, out text) && !row.TryGetValue("en", out text))
+                    text = key;
             }
             if (args != null && args.Length > 0)
                 text = string.Format(text, args);
@@ -113,7 +128,7 @@ namespace PersistentWindows.Common
                 if (File.Exists(LangFile))
                 {
                     string v = File.ReadAllText(LangFile).Trim();
-                    LangIndex = v == "zh" ? 1 : 0;
+                    if (v.Length > 0) Current = v;
                 }
             }
             catch (Exception)
@@ -123,13 +138,13 @@ namespace PersistentWindows.Common
         }
 
         /// <summary>switch language and persist the choice</summary>
-        public static void Set(int index)
+        public static void Set(string language)
         {
-            LangIndex = index;
+            Current = language;
             try
             {
                 if (LangFile != null)
-                    File.WriteAllText(LangFile, LangIndex == 1 ? "zh" : "en");
+                    File.WriteAllText(LangFile, Current);
             }
             catch (Exception)
             {

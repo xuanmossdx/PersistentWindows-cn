@@ -517,7 +517,9 @@ namespace PersistentWindows.SystrayShell
 
         private void ToggleLanguage(Object sender, EventArgs e)
         {
-            Lang.Set(Lang.LangIndex == 1 ? 0 : 1);
+            // cycle through the registered languages (en -> cn -> en ...)
+            int i = System.Array.IndexOf(Lang.Languages, Lang.Current);
+            Lang.Set(Lang.Languages[(i + 1) % Lang.Languages.Length]);
             ApplyLanguage();
             notifyIconMain.ShowBalloonTip(5000, Lang.T("balloon.languageSwitched"),
                 Lang.T("balloon.languageApplied"), ToolTipIcon.Info);
