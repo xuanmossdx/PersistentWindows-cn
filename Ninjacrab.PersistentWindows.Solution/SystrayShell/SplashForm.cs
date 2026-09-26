@@ -27,22 +27,7 @@ namespace PersistentWindows.SystrayShell
 
         private void SplashForm_Load(object sender, EventArgs e)
         {
-            this.label1.Text = Lang.Chinese ?
-    $@"
-    Persistent Windows
-    版本 {Application.ProductVersion}
-
-    作者:        Min Yong Kim
-    贡献者:  Kang Yu, Sean Aitken
-    " :
-    $@"
-    Persistent Windows
-    Version {Application.ProductVersion}
-
-    Author:        Min Yong Kim
-    Contributors:  Kang Yu, Sean Aitken
-    ";
-
+            this.label1.Text = Lang.T("splash.info", Application.ProductVersion);
         }
 
         private void label2_Click(object sender, EventArgs e)

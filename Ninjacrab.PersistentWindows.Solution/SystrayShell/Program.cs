@@ -683,7 +683,7 @@ if not errorlevel 1 goto wait_to_finish";
                 {
                     char c = SnapshotIdToChar(id);
                     if (prompt)
-                        systrayForm.notifyIconMain.ShowBalloonTip(5000, Lang.T($"snapshot '{c}' is captured", $"快照 '{c}' 已保存"), Lang.T($"click icon then immediately press key '{c}' to restore the snapshot", $"点击图标后立即按数字键 '{c}' 即可恢复该快照"), ToolTipIcon.Info);
+                        systrayForm.notifyIconMain.ShowBalloonTip(5000, Lang.T("balloon.snapshotCaptured", c), Lang.T("balloon.snapshotRestoreHint", c), ToolTipIcon.Info);
                 }
 
                 EnableRestoreSnapshotMenu(true);
