@@ -96,6 +96,12 @@ namespace PersistentWindows.Common
             { "menu.language", Row(
                 "en", "Language",
                 "zh", "语言 / Language") },
+            { "lang.name.en", Row(
+                "en", "English",
+                "zh", "English") },
+            { "lang.name.zh", Row(
+                "en", "Chinese (Simplified)",
+                "zh", "简体中文") },
             { "menu.help", Row(
                 "en", "&Help",
                 "zh", "帮助(&H)") },
@@ -293,6 +299,14 @@ namespace PersistentWindows.Common
         {
             return "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"")
                            .Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t") + "\"";
+        }
+
+        /// <summary>display name of a registered language, shown in the tray menu;
+        /// defined as a "lang.name.{code}" table row, falls back to the code itself</summary>
+        public static string DisplayName(string code)
+        {
+            string k = "lang.name." + code;
+            return Strings.ContainsKey(k) ? T(k) : code;
         }
 
         /// <summary>switch language and persist the choice</summary>

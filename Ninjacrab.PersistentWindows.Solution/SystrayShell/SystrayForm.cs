@@ -69,8 +69,18 @@ namespace PersistentWindows.SystrayShell
                 invokeWebCommander.Text = Lang.T("menu.enableWebCommander");
             }
 
+            // one sub-menu item per registered language; new languages appear here automatically
             languageMenuItem = new ToolStripMenuItem(Lang.T("menu.language"));
-            languageMenuItem.Click += ToggleLanguage;
+            foreach (string lang in Lang.Languages)
+            {
+                var item = new ToolStripMenuItem(Lang.DisplayName(lang))
+                {
+                    Tag = lang,
+                    Checked = lang == Lang.Current
+                };
+                item.Click += SelectLanguage;
+                languageMenuItem.DropDownItems.Add(item);
+            }
             contextMenuStripSysTray.Items.Insert(contextMenuStripSysTray.Items.IndexOf(aboutToolStripMenuItem), languageMenuItem);
             ApplyLanguage();
 
@@ -515,11 +525,9 @@ namespace PersistentWindows.SystrayShell
             }
         }
 
-        private void ToggleLanguage(Object sender, EventArgs e)
+        private void SelectLanguage(Object sender, EventArgs e)
         {
-            // cycle through the registered languages (en -> cn -> en ...)
-            int i = System.Array.IndexOf(Lang.Languages, Lang.Current);
-            Lang.Set(Lang.Languages[(i + 1) % Lang.Languages.Length]);
+            Lang.Set((string)((ToolStripMenuItem)sender).Tag);
             ApplyLanguage();
             notifyIconMain.ShowBalloonTip(5000, Lang.T("balloon.languageSwitched"),
                 Lang.T("balloon.languageApplied"), ToolTipIcon.Info);
@@ -529,6 +537,8 @@ namespace PersistentWindows.SystrayShell
         private void ApplyLanguage()
         {
             languageMenuItem.Text = Lang.T("menu.language");
+            foreach (ToolStripMenuItem it in languageMenuItem.DropDownItems)
+                it.Checked = ((string)it.Tag) == Lang.Current;
             captureToolStripMenuItem.Text = Lang.T("menu.captureDisk");
             restoreToolStripMenuItem.Text = Lang.T("menu.restoreDisk");
             restoreAllParkedMenuItem.Text = Lang.T("menu.restoreMinimized");
